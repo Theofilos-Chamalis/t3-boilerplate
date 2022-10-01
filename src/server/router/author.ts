@@ -30,4 +30,23 @@ export const authorRouter = createRouter()
         },
       });
     },
+  })
+  .mutation("create", {
+    input: z.object({
+      name: z.string().min(1),
+      email: z.string().min(1).email(),
+      password: z.string().min(6),
+      birthCounty: z.string().min(1),
+    }),
+    async resolve({ ctx, input }) {
+      return await ctx.prisma.author.create({
+        data: {
+          name: input.name,
+          email: input.email,
+          password: input.password,
+          birthCounty: input.birthCounty,
+          books: {},
+        },
+      });
+    },
   });

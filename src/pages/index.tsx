@@ -4,10 +4,34 @@ import { trpc } from "../utils/trpc";
 
 const Home: NextPage = () => {
   const hello = trpc.useQuery(["author.hello", { text: "from tRPC" }]);
-  const { data: authors } = trpc.useQuery(["author.getAll"]);
-  const { data: books } = trpc.useQuery(["book.getAll"]);
+  const authors = trpc.useQuery(["author.getAll"]);
+  const books = trpc.useQuery(["book.getAll"]);
+  const createBook = trpc.useMutation(["book.create"]);
+  const createAuthor = trpc.useMutation(["author.create"]);
 
   const helloText = hello.data?.greeting || "Loading...";
+
+  const addNewBook = () =>
+    createBook
+      .mutateAsync({
+        title: `Random Book ${Math.floor(Math.random() * 500) + 1}`,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        publishedAt: new Date(),
+        published: Math.random() > 0.5,
+        authorId: Math.floor(Math.random() * (authors?.data?.length || 3) + 1),
+      })
+      .then(() => books.refetch());
+
+  const addNewAuthor = () =>
+    createAuthor
+      .mutateAsync({
+        name: `Random Author ${Math.floor(Math.random() * 500) + 1}`,
+        email: `author${Math.floor(Math.random() * 500)}@gmail.com`,
+        password: `${Math.floor(Math.random() * 1000)}author123`,
+        birthCounty: Math.random() > 0.5 ? "Brazil" : "USA",
+      })
+      .then(() => authors.refetch());
 
   return (
     <>
@@ -23,8 +47,16 @@ const Home: NextPage = () => {
         </h1>
         <div className="flex flex-row justify-between gap-32">
           <div className="w-1/2">
-            <p className="text-2xl text-gray-700">Books</p>
-            {books?.map((book) => (
+            <div className="mb-4 flex items-end justify-between gap-4">
+              <p className="text-2xl text-gray-700">Books</p>
+              <button
+                className="rounded border border-black bg-gray-700 p-1 text-white"
+                onClick={() => addNewBook()}
+              >
+                Add new
+              </button>
+            </div>
+            {books?.data?.map((book) => (
               <InfoCard
                 key={book.id + book.title}
                 title={book.title}
@@ -38,8 +70,16 @@ const Home: NextPage = () => {
             ))}
           </div>
           <div className="w-1/2">
-            <p className="text-2xl text-gray-700">Authors</p>
-            {authors?.map((author) => (
+            <div className="mb-4 flex items-end justify-between gap-4">
+              <p className="text-2xl text-gray-700">Authors</p>
+              <button
+                className="rounded border border-black bg-gray-700 p-1 text-white"
+                onClick={() => addNewAuthor()}
+              >
+                Add new
+              </button>
+            </div>
+            {authors?.data?.map((author) => (
               <InfoCard
                 key={author.id + author.name}
                 title={author.name}
